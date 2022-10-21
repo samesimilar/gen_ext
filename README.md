@@ -15,7 +15,7 @@ This has been tested with gen~ code exported from Max 8.
 2. Create a new project folder and then copy the contents of this repository's `template` into it.
 3. Copy the exported `gen~` dsp code, (including the `gen_dsp` folder) into the `gen` folder in the template. Make a note of the .cpp file that `gen~` exported.
 4. Open `Makefile` in your project folder and edit the two variables at the top.
-	- Make sure gen.name matches the name of the exported `.cpp` file. E.g. if the file was exported as `gen_exported.cpp`, then set `lib.name = gen_exported`.
+	- Make sure gen.name matches the name of the exported `.cpp` file. E.g. if the file was exported as `gen_exported.cpp`, then set `gen.name = gen_exported`.
 	- Set lib.name to the name you would like for your new pd external object. E.g. if you set the name as `lib.name = myObject` then you can create your object in pd as `myObject~`.
 5. Copy your project folder to a folder on your Organelle.
 6. On your Organelle, go to the project folder in your terminal and run `make all`.
