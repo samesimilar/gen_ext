@@ -7,7 +7,7 @@ This project is intended to generate externals for use on the [Organelle](https:
 
 At this stage, gen_ext is still an experimental project. My knowledge of gen~ is fairly naive and limited, so there may be some things that don't work. 
 
-This has been tested with gen~ code exported from Max 8.
+This has been tested with gen~ code exported from Max 8.3.2.
 
 ### How to use gen_ext
 
@@ -24,3 +24,7 @@ This has been tested with gen~ code exported from Max 8.
 
 #### Tip
 If you send a `bang` to the new object, it will print out information about the gen~ parameters it accepts. To set a parameter on the object, send a `<symbol> <float>` to the first inlet, with `<symbol>` matching the parameter name.
+	
+#### Attribution
+The _gigaverb_ example included in this repository includes code exported from the _gen~.gigaverb_ example code included in Max 8.3.2. Cycling '74 attributes this implementation as being ported from an implementation by Juhana Sadeharju (kouhia@nic.funet.fi).
+
