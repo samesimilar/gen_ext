@@ -7,7 +7,7 @@ gen.name = gen_exported
 # (do not add a ~ suffix to the name here)
 lib.name = gigaverb
 
-genext.version = 0.3.0
+genext.version = 0.4.0
 
 $(lib.name)~.class.sources = gen_ext.cpp _ext.cpp ./gen/gen_dsp/genlib.cpp 
 cflags = -I ./gen -I./gen/gen_dsp -DGEN_EXT_VERSION=$(genext.version) -DPD_EXT_NAME=$(lib.name) -DGEN_EXPORTED_NAME=$(gen.name) -DGEN_EXPORTED_HEADER=\"$(gen.name).h\" -DGEN_EXPORTED_CPP=\"$(gen.name).cpp\"

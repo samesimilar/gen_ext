@@ -132,9 +132,10 @@ static void WRAPPER_ANY_METHOD(WRAPPER_TYPE *x, t_symbol *s, int argc, t_atom *a
 				
 				// post(getparametername(x->m_genObject, i));
 			}
-			break;
+			return;
 		}
 	}
+	post("%s~ does not recognize the parameter %s. Send a bang to this object to see recognized parameters.", STR(PD_EXT_NAME), s->s_name);
 }
 
 static void WRAPPER_BANG(WRAPPER_TYPE *x) {
@@ -144,6 +145,7 @@ static void WRAPPER_BANG(WRAPPER_TYPE *x) {
 	post("num_audio_rate_inputs: %d", x->x_num_inputs);
 	post("num_audio_rate_outputs: %d", x->x_num_outputs);
 	post("num_params: %d", x->x_num_params);
+	post("param: sr: set custom sample rate");
 	int i;
 	for (i = 0; i < x->x_num_params; i++) {
 		const char * name = getparametername(x->m_genObject, i);
@@ -170,6 +172,15 @@ static void WRAPPER_BANG(WRAPPER_TYPE *x) {
 	
 }
 
+static void WRAPPER_SR(WRAPPER_TYPE *x, t_float sr) {
+	post ("new sample rate: %g", sr);
+	if (x->x_sr != sr) {
+		if (x->m_genObject) {destroy(x->m_genObject);}
+		x->x_sr = sr;
+		x->m_genObject = (CommonState*)create(x->x_sr, x->x_bs);
+	}
+}
+
 extern "C" void WRAPPER_SETUP (void) {	
 
    WRAPPER_CLASS = class_new(gensym(STR(PD_EXT_NAME) "~"),
@@ -178,9 +189,11 @@ extern "C" void WRAPPER_SETUP (void) {
          CLASS_DEFAULT, A_NULL);
 		 
   class_addbang(WRAPPER_CLASS, WRAPPER_BANG);
+  class_addmethod(WRAPPER_CLASS, (t_method)WRAPPER_SR, gensym("sr"), A_FLOAT, 0);
   
   class_addmethod(WRAPPER_CLASS,
             (t_method)WRAPPER_DSP, gensym("dsp"), A_CANT, 0);
+	
 
 			
 	class_addanything(WRAPPER_CLASS, (t_method)WRAPPER_ANY_METHOD);
