@@ -25,12 +25,42 @@ typedef struct WRAPPER_STRUCT {
   t_symbol **x_param_symbols;
   int x_num_params;
   
+  PdBuffer **x_buffer_instances;
+  t_symbol **x_buffer_symbols;
+  
+  int x_num_buffers;
+  
 } WRAPPER_TYPE;
+
 
 static void *WRAPPER_NEW(void)
 {
   WRAPPER_TYPE *x = (WRAPPER_TYPE *)pd_new(WRAPPER_CLASS);
   
+  x->x_num_buffers = WRAPPER_BUFFER_COUNT;
+  if (x->x_num_buffers > 0) {
+	  x->x_buffer_instances = (PdBuffer **) getbytes(sizeof(PdBuffer *) * x->x_num_buffers);
+	  x->x_buffer_symbols = ( t_symbol ** ) getbytes(sizeof(t_symbol *) * x->x_num_buffers);
+	  for (int i = 0; i < x->x_num_buffers; i++)
+	  {
+		  x->x_buffer_instances[i] = new PdBuffer;
+	  }
+#ifdef WRAPPER_BUFFER_NAME_0
+	  if (x->x_num_buffers >= 1) { x->x_buffer_symbols[0] = gensym(STR(WRAPPER_BUFFER_NAME_0)); }	 
+#endif
+#ifdef WRAPPER_BUFFER_NAME_1
+	  if (x->x_num_buffers >= 2) { x->x_buffer_symbols[1] = gensym(STR(WRAPPER_BUFFER_NAME_1)); }	 
+#endif
+#ifdef WRAPPER_BUFFER_NAME_2
+	  if (x->x_num_buffers >= 3) { x->x_buffer_symbols[2] = gensym(STR(WRAPPER_BUFFER_NAME_2)); }	 
+#endif
+#ifdef WRAPPER_BUFFER_NAME_3
+	  if (x->x_num_buffers >= 4) { x->x_buffer_symbols[3] = gensym(STR(WRAPPER_BUFFER_NAME_3)); }	 
+#endif
+#ifdef WRAPPER_BUFFER_NAME_4
+	  if (x->x_num_buffers >= 5) { x->x_buffer_symbols[4] = gensym(STR(WRAPPER_BUFFER_NAME_4)); }	 
+#endif
+  }
   
   x->x_sr = sys_getsr();
   x->x_bs = sys_getblksize();
@@ -68,7 +98,7 @@ static void *WRAPPER_NEW(void)
   return (void *)x;
 }
 /**
-NOTE: we do not really need to free inlets and outlet. As Pd will automatically free them for us (unless we are doing higher-order magic, like displaying one object's iolet as another object's. but let's not get into that for now...)
+NOTE: (quoting from pd external dev guide) we do not really need to free inlets and outlet. As Pd will automatically free them for us (unless we are doing higher-order magic, like displaying one object's iolet as another object's. but let's not get into that for now...)
 **/
 
 static void WRAPPER_FREE(WRAPPER_TYPE *x) {
@@ -76,6 +106,20 @@ static void WRAPPER_FREE(WRAPPER_TYPE *x) {
 	if (x->x_num_params > 0) {
 		freebytes(x->x_param_symbols, sizeof(t_symbol *) * x->x_num_params);
 	}
+	if (x->x_num_buffers > 0) {
+		freebytes(x->x_buffer_symbols, sizeof(t_symbol *) * x->x_num_buffers);
+		for (int i = 0; i < x->x_num_buffers; i++) 
+		{
+			delete x->x_buffer_instances[i];
+		}
+		freebytes(x->x_buffer_instances, sizeof(PdBuffer *) * x->x_num_buffers);
+	}
+	// if (x->src_instance) {
+	// 	delete x->src_instance;
+	// }
+	// if (x->win_instance) {
+	// 	delete x->win_instance;
+	// }
 }
 
 /**
@@ -95,14 +139,41 @@ static t_int *WRAPPER_PERFORM(t_int *w)
 	
 	
 	int n= (int)(w[sampleCountIndex]);
+
+	// set global object
+	
+#ifdef WRAPPER_BUFFER_NAME_0
+	if (x->x_num_buffers >= 1){ WRAPPER_BUFFER_NAME_0 = *x->x_buffer_instances[0];}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_1
+	if (x->x_num_buffers >= 2){ WRAPPER_BUFFER_NAME_1 = *x->x_buffer_instances[1];}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_2
+	if (x->x_num_buffers >= 3){WRAPPER_BUFFER_NAME_2 = *x->x_buffer_instances[2];}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_3
+	if (x->x_num_buffers >= 4){WRAPPER_BUFFER_NAME_3 = *x->x_buffer_instances[3];}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_4
+	if (x->x_num_buffers >= 5){WRAPPER_BUFFER_NAME_4 = *x->x_buffer_instances[4];}
+#endif
 	
 	perform(x->m_genObject, (t_sample **)(&w[inputIndex]), x->x_num_inputs, (t_sample **)(&w[outputIndex]), x->x_num_outputs, n);
 	
 	return (w+sampleCountIndex+1);
 	
 }
+
+static void set_arrays(WRAPPER_TYPE *x)
+{
+	for (int i = 0; i < x->x_num_buffers; i++) {
+		x->x_buffer_instances[i]->setarray(x->x_buffer_symbols[i]);
+	}
+}
 static void WRAPPER_DSP(WRAPPER_TYPE *x, t_signal **sp)
   {
+
+  set_arrays(x);
   	int i;
 	int inOutCount = x->x_num_inputs + x->x_num_outputs;
   	int pointerCount = inOutCount + 2;
@@ -124,6 +195,39 @@ static void WRAPPER_DSP(WRAPPER_TYPE *x, t_signal **sp)
 static void WRAPPER_ANY_METHOD(WRAPPER_TYPE *x, t_symbol *s, int argc, t_atom *argv) {
 	int i;
 	// lookup method in symbol list and set parameter
+	if (s == gensym("pdset")) {
+		if (argc < 2) {
+			post("%s~: pdset message must have 2 symbol parameters: original_buffer_name new_buffer_name", STR(PD_EXT_NAME));	
+			return;		
+		}
+		t_symbol *orig = atom_getsymbolarg(0, argc, argv);
+		if (!orig) {
+			post("%s~: pdset message must have 2 symbol parameters: original_buffer_name new_buffer_name", STR(PD_EXT_NAME));	
+			return;
+		}
+		t_symbol *n = atom_getsymbolarg(1, argc, argv);
+		if (!n) {
+			post("%s~: pdset message must have 2 symbol parameters: original_buffer_name new_buffer_name", STR(PD_EXT_NAME));	
+			return;
+		}
+#ifdef WRAPPER_BUFFER_NAME_0
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_0)) && x->x_num_buffers >= 1) {x->x_buffer_symbols[0] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_1
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_1)) && x->x_num_buffers >= 2) {x->x_buffer_symbols[1] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_2
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_2)) && x->x_num_buffers >= 3) {x->x_buffer_symbols[2] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_3
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_3)) && x->x_num_buffers >= 4) {x->x_buffer_symbols[3] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_4
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_4)) && x->x_num_buffers >= 5) {x->x_buffer_symbols[4] = n;}
+#endif
+		set_arrays(x);
+		return;
+	}
 	for (i = 0; i < x->x_num_params; i++) {
 		if (s == x->x_param_symbols[i]) {
 			if (argc > 0) {
@@ -168,6 +272,25 @@ static void WRAPPER_BANG(WRAPPER_TYPE *x) {
 			}
 			
 		}
+	}
+	if (x->x_num_buffers > 0) {
+		post("This object references the following buffer names:");
+#ifdef WRAPPER_BUFFER_NAME_0
+		post(STR(WRAPPER_BUFFER_NAME_0));
+#endif
+#ifdef WRAPPER_BUFFER_NAME_1
+		post(STR(WRAPPER_BUFFER_NAME_1));
+#endif
+#ifdef WRAPPER_BUFFER_NAME_2
+		post(STR(WRAPPER_BUFFER_NAME_2));
+#endif
+#ifdef WRAPPER_BUFFER_NAME_3
+		post(STR(WRAPPER_BUFFER_NAME_3));
+#endif
+#ifdef WRAPPER_BUFFER_NAME_4
+		post(STR(WRAPPER_BUFFER_NAME_4));
+#endif
+		post ("Send `pdset original_buffer_name new_buffer_name` to switch out buffers.");
 	}
 	
 }
