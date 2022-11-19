@@ -13,6 +13,9 @@
 // to be enlarged if the gen~ algorithm assumes a larger buffer
 // and one is not assigned in Pd.
 	static float pd_buffer_zeros[] = {0,0,0,0,0,0,0,0};
+	
+	// fix for when compiling on Apple Silicon (stride=2), see sample read below
+	static const int stride = sizeof(t_word) / 4;
 #define PD_BUFFER_ZEROS
 #endif
 
@@ -20,6 +23,13 @@
 typedef struct PdBuffer : public DataInterface<t_sample> {
 	
 	PdBuffer() : DataInterface<t_sample>() {}
+	
+	
+	
+	// raw reading/writing/overdubbing (internal use only, no bounds checking)
+	inline t_sample read(long index, long channel=0) const {
+		return mData[channel+index*channels*stride];
+	}
 
 	// call this method in the Pd "dsp" method so that it 
 	// updates the vector reference if arrays are deleted
