@@ -1,0 +1,48 @@
+#N canvas 273 332 1103 464 12;
+#X obj 238 211 RamplePlayer~;
+#X obj 237 137 phasor~;
+#N canvas 0 22 450 278 (subpatch) 0;
+#X array sample 136214 float 2;
+#X coords 0 1 136214 -1 200 140 1;
+#X restore 385 307 graph;
+#X obj 500 101 loadbang;
+#X obj 499 82 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
+#000000;
+#X obj 502 180 soundfiler;
+#X obj 123 42 hsl 128 15 -16 16 0 0 empty empty empty -2 -8 0 10 #fcfcfc
+#000000 #000000 0 1;
+#X msg 105 108 0;
+#X obj 768 81 bng 15 250 50 0 empty empty empty 17 7 0 10 #fcfcfc #000000
+#000000;
+#X obj 767 107 loadbang;
+#X obj 767 155 soundfiler;
+#X msg 25 148 pdset sample anothersample;
+#X msg 25 175 pdset sample sample;
+#N canvas 0 22 450 278 (subpatch) 0;
+#X array anothersample 651231 float 2;
+#X coords 0 1 651231 -1 200 140 1;
+#X restore 710 287 graph;
+#X floatatom 770 206 13 0 0 0 - - - 0;
+#X floatatom 509 222 7 0 0 0 - - - 0;
+#X text 62 110 stop;
+#X text 17 38 playback speed;
+#X obj 220 273 throw~ outL;
+#X obj 213 312 throw~ outR;
+#X text 259 248 Organelle Outs;
+#X msg 767 131 read -resize side_b.wav anothersample;
+#X msg 500 133 read -resize side_a.wav sample;
+#X connect 0 0 18 0;
+#X connect 0 0 19 0;
+#X connect 1 0 0 0;
+#X connect 3 0 22 0;
+#X connect 4 0 22 0;
+#X connect 5 0 15 0;
+#X connect 6 0 1 0;
+#X connect 7 0 1 0;
+#X connect 8 0 21 0;
+#X connect 9 0 21 0;
+#X connect 10 0 14 0;
+#X connect 11 0 0 0;
+#X connect 12 0 0 0;
+#X connect 21 0 10 0;
+#X connect 22 0 5 0;
