@@ -10,6 +10,7 @@ At this stage, gen_ext is still an experimental project. My knowledge of gen~ is
 ### Things that don't work
 
 * I'm not sure how fft inputs are handled, so it probably doesn't work (e.g. for spectral delay implementations)
+* Buffers are supported but only for 1 channel (each). Multi-channel buffers are not supported.
 
 This has been tested with gen~ code exported from Max 8.3.2.
 
