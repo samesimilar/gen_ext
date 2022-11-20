@@ -30,6 +30,24 @@ typedef struct PdBuffer : public DataInterface<t_sample> {
 	inline t_sample read(long index, long channel=0) const {
 		return mData[channel+index*channels*stride];
 	}
+	
+	inline void write(t_sample value, long index, long channel=0) {
+		mData[channel+index*channels*stride] = value;
+		modified = 1;
+	}
+	// NO LONGER USED:
+	inline void overdub(t_sample value, long index, long channel=0) {
+		mData[channel+index*channels*stride] += value;
+		modified = 1;
+	}
+
+	// averaging overdub (used by splat)
+	inline void blend(t_sample value, long index, long channel, t_sample alpha) {
+		long offset = channel+index*channels*stride;
+		const t_sample old = mData[offset];
+		mData[offset] = old + alpha * (value - old);
+		modified = 1;
+	}
 
 	// call this method in the Pd "dsp" method so that it 
 	// updates the vector reference if arrays are deleted

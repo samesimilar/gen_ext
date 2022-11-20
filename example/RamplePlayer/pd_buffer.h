@@ -14,7 +14,7 @@
 // and one is not assigned in Pd.
 	static float pd_buffer_zeros[] = {0,0,0,0,0,0,0,0};
 	
-	// fix for when compiling on Apple Silicon (stride=2), see sample read below
+	// fix for when compiling on Apple Silicon (stride=2), see read/write overrides below
 	static const int stride = sizeof(t_word) / 4;
 #define PD_BUFFER_ZEROS
 #endif
@@ -29,6 +29,24 @@ typedef struct PdBuffer : public DataInterface<t_sample> {
 	// raw reading/writing/overdubbing (internal use only, no bounds checking)
 	inline t_sample read(long index, long channel=0) const {
 		return mData[channel+index*channels*stride];
+	}
+	
+	inline void write(t_sample value, long index, long channel=0) {
+		mData[channel+index*channels*stride] = value;
+		modified = 1;
+	}
+	// NO LONGER USED:
+	inline void overdub(t_sample value, long index, long channel=0) {
+		mData[channel+index*channels*stride] += value;
+		modified = 1;
+	}
+
+	// averaging overdub (used by splat)
+	inline void blend(t_sample value, long index, long channel, t_sample alpha) {
+		long offset = channel+index*channels*stride;
+		const t_sample old = mData[offset];
+		mData[offset] = old + alpha * (value - old);
+		modified = 1;
 	}
 
 	// call this method in the Pd "dsp" method so that it 
