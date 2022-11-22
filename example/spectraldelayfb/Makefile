@@ -5,7 +5,7 @@ gen.name = gen_exported
 
 # change this to match the name of the external you would like to generate
 # (do not add a ~ suffix to the name here)
-lib.name = gigaverb
+lib.name = spectraldelayfb
 
 # Don't forget to edit gen_buffer.h if your gen~ object references buffers in max.
 

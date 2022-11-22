@@ -9,7 +9,6 @@ At this stage, gen_ext is still an experimental project. My knowledge of gen~ is
 
 ### Things that don't work
 
-* I'm not sure how fft inputs are handled, so it probably doesn't work (e.g. for spectral delay implementations)
 * Buffers are supported but only for 1 channel (each). Multi-channel buffers are not supported.
 
 This has been tested with gen~ code exported from Max 8.3.2.
@@ -45,12 +44,21 @@ _Note: The names of your buffers must not contain spaces or non-alphanumeric cha
 
 _Tip: Send a `pdset originalname newname` message to the your object to switch in a Pd array with a different name for a buffer._
 
-#### Setting a custom sample rate
+#### Setting a custom sample rate and block size
 
-The compiled external will accept an `sr` message that lets you reset the wrapped gen~ object with a new sample rate. This is useful if you are using the object in a sub-patch with a block~ object. A typical use would be to oversample the dsp in the sub-patch.
+The compiled external will accept a `pdsr` or a `pdbs` message that lets you reset the wrapped gen~ object with a new sample rate (or block size, respectively). This is useful if you are using the object in a sub-patch with a block~ object. A typical use would be to oversample the dsp in the sub-patch, or to use it to process output from an rfft~ object in Pd (see the spectraldelayfb example).
 
-If no `sr` message is sent to the wrapped gen~ object, it will default to operating at the global sample rate for the system.
+If no `pdsr` or `pdbs` messages are sent to the wrapped gen~ object, it will default to assuming the global sample rate and block size for the system, even in a subpatch.
+
+_Note: If you don't want the `pdsr`, `pdbs` or `pdset` messages to override other previoiusly-defined parameters (coincidentally of the same name) in your gen~ object, you can change the names in `gen_ext_common.h`._
+
+#### Simulating the Max pfft~ environment in Pd
+
+See the `main.pd` file in the spectral delay example for an idea of how it can work. 
 	
 #### Attribution
+
 The _gigaverb_ example included in this repository includes code exported from the _gen~.gigaverb_ example code included in Max 8.3.2. Cycling '74 attributes this implementation as being ported from an implementation by Juhana Sadeharju (kouhia@nic.funet.fi).
+
+The _spectraldelayfb_ example included in this repository includes code exported from the _gen~.spectraldelay_feedback_ example code included in Max 8.5.0.
 

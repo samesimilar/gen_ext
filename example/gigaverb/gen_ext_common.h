@@ -20,4 +20,12 @@
 #define WRAPPER_DSP WRAPPER_FUN2(PD_EXT_NAME, _tilde_DSP)
 #define WRAPPER_ANY_METHOD WRAPPER_FUN2(PD_EXT_NAME, _tilde_any_method)
 #define WRAPPER_BANG WRAPPER_FUN2(PD_EXT_NAME, _tilde_bang)
+#define WRAPPER_PDSET WRAPPER_FUN2(PD_EXT_NAME, _tilde_pdset)
 #define WRAPPER_SR WRAPPER_FUN2(PD_EXT_NAME, _tilde_sr)
+#define WRAPPER_BS WRAPPER_FUN2(PD_EXT_NAME, _tilde_bs)
+#define WRAPPER_RESET WRAPPER_FUN2(PD_EXT_NAME, _tilde_reset)
+
+#define MESSAGE_SET pdset
+#define MESSAGE_SR pdsr
+#define MESSAGE_BS pdbs
+#define MESSAGE_RESET reset

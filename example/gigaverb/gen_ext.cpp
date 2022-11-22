@@ -195,39 +195,6 @@ static void WRAPPER_DSP(WRAPPER_TYPE *x, t_signal **sp)
 static void WRAPPER_ANY_METHOD(WRAPPER_TYPE *x, t_symbol *s, int argc, t_atom *argv) {
 	int i;
 	// lookup method in symbol list and set parameter
-	if (s == gensym("pdset")) {
-		if (argc < 2) {
-			post("%s~: pdset message must have 2 symbol parameters: original_buffer_name new_buffer_name", STR(PD_EXT_NAME));	
-			return;		
-		}
-		t_symbol *orig = atom_getsymbolarg(0, argc, argv);
-		if (!orig) {
-			post("%s~: pdset message must have 2 symbol parameters: original_buffer_name new_buffer_name", STR(PD_EXT_NAME));	
-			return;
-		}
-		t_symbol *n = atom_getsymbolarg(1, argc, argv);
-		if (!n) {
-			post("%s~: pdset message must have 2 symbol parameters: original_buffer_name new_buffer_name", STR(PD_EXT_NAME));	
-			return;
-		}
-#ifdef WRAPPER_BUFFER_NAME_0
-		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_0)) && x->x_num_buffers >= 1) {x->x_buffer_symbols[0] = n;}
-#endif
-#ifdef WRAPPER_BUFFER_NAME_1
-		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_1)) && x->x_num_buffers >= 2) {x->x_buffer_symbols[1] = n;}
-#endif
-#ifdef WRAPPER_BUFFER_NAME_2
-		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_2)) && x->x_num_buffers >= 3) {x->x_buffer_symbols[2] = n;}
-#endif
-#ifdef WRAPPER_BUFFER_NAME_3
-		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_3)) && x->x_num_buffers >= 4) {x->x_buffer_symbols[3] = n;}
-#endif
-#ifdef WRAPPER_BUFFER_NAME_4
-		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_4)) && x->x_num_buffers >= 5) {x->x_buffer_symbols[4] = n;}
-#endif
-		set_arrays(x);
-		return;
-	}
 	for (i = 0; i < x->x_num_params; i++) {
 		if (s == x->x_param_symbols[i]) {
 			if (argc > 0) {
@@ -248,8 +215,9 @@ static void WRAPPER_BANG(WRAPPER_TYPE *x) {
     post("%s~ samplerate: %g, blocksize: %d", STR(PD_EXT_NAME), x->x_sr, x->x_bs);
 	post("num_audio_rate_inputs: %d", x->x_num_inputs);
 	post("num_audio_rate_outputs: %d", x->x_num_outputs);
-	post("num_params: %d", x->x_num_params);
-	post("param: sr: set custom sample rate");
+	post("num gen params: %d", x->x_num_params);
+	post("param: %s: set custom sample rate", STR(MESSAGE_SR));
+	post("param: %s: set custom block size", STR(MESSAGE_BS));
 	int i;
 	for (i = 0; i < x->x_num_params; i++) {
 		const char * name = getparametername(x->m_genObject, i);
@@ -290,17 +258,56 @@ static void WRAPPER_BANG(WRAPPER_TYPE *x) {
 #ifdef WRAPPER_BUFFER_NAME_4
 		post(STR(WRAPPER_BUFFER_NAME_4));
 #endif
-		post ("Send `pdset original_buffer_name new_buffer_name` to switch out buffers.");
+		post ("Send `%s original_buffer_name new_buffer_name` to switch out buffers.", STR(MESSAGE_SET));
 	}
 	
 }
 
 static void WRAPPER_SR(WRAPPER_TYPE *x, t_float sr) {
-	post ("new sample rate: %g", sr);
+	post ("%s new sample rate: %g", STR(PD_EXT_NAME) "~", sr);
 	if (x->x_sr != sr) {
 		if (x->m_genObject) {destroy(x->m_genObject);}
 		x->x_sr = sr;
 		x->m_genObject = (CommonState*)create(x->x_sr, x->x_bs);
+	}
+}
+
+static void WRAPPER_BS(WRAPPER_TYPE *x, t_float bs) {
+	post("%s new block size: %g", STR(PD_EXT_NAME) "~", bs);
+	if (x->x_bs != bs) {
+		if (x->m_genObject) {destroy(x->m_genObject);}
+		x->x_bs = bs;
+		x->m_genObject = (CommonState*)create(x->x_sr, x->x_bs);
+	}
+}
+
+static void WRAPPER_PDSET(WRAPPER_TYPE *x, t_symbol *orig, t_symbol *n)
+{
+
+#ifdef WRAPPER_BUFFER_NAME_0
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_0)) && x->x_num_buffers >= 1) {x->x_buffer_symbols[0] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_1
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_1)) && x->x_num_buffers >= 2) {x->x_buffer_symbols[1] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_2
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_2)) && x->x_num_buffers >= 3) {x->x_buffer_symbols[2] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_3
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_3)) && x->x_num_buffers >= 4) {x->x_buffer_symbols[3] = n;}
+#endif
+#ifdef WRAPPER_BUFFER_NAME_4
+		if (orig == gensym(STR(WRAPPER_BUFFER_NAME_4)) && x->x_num_buffers >= 5) {x->x_buffer_symbols[4] = n;}
+#endif
+		set_arrays(x);
+		return;
+	
+}
+
+static void WRAPPER_RESET(WRAPPER_TYPE *x)
+{
+	if (x->m_genObject) {
+		reset(x->m_genObject);
 	}
 }
 
@@ -312,7 +319,10 @@ extern "C" void WRAPPER_SETUP (void) {
          CLASS_DEFAULT, A_NULL);
 		 
   class_addbang(WRAPPER_CLASS, WRAPPER_BANG);
-  class_addmethod(WRAPPER_CLASS, (t_method)WRAPPER_SR, gensym("sr"), A_FLOAT, 0);
+  class_addmethod(WRAPPER_CLASS, (t_method)WRAPPER_SR, gensym(STR(MESSAGE_SR)), A_FLOAT, 0);
+  class_addmethod(WRAPPER_CLASS, (t_method)WRAPPER_BS, gensym(STR(MESSAGE_BS)), A_FLOAT, 0);
+  class_addmethod(WRAPPER_CLASS, (t_method)WRAPPER_PDSET, gensym(STR(MESSAGE_SET)), A_SYMBOL, A_SYMBOL, 0);
+  class_addmethod(WRAPPER_CLASS, (t_method)WRAPPER_RESET, gensym(STR(MESSAGE_RESET)), A_NULL, 0);
   
   class_addmethod(WRAPPER_CLASS,
             (t_method)WRAPPER_DSP, gensym("dsp"), A_CANT, 0);
