@@ -3,7 +3,7 @@
 
 gen_ext is a wrapper that lets you compile code exported from a Max gen~ object into an "external" object that can be loaded into a PureData patch.
 
-This project is intended to generate externals for use on the [Organelle](https://www.critterandguitari.com/organelle) synth, however it is not customized specifically for this platform. Simply, thus far I have limited my testing to the Organelle.
+This project is intended to generate externals for use on the [Organelle](https://www.critterandguitari.com/organelle) synth, however it is not customized specifically for this platform. Simply, thus far I have limited my testing to the Organelle. But! That said, I have not had any trouble at all getting my `gen` externals for `pd` to compile natively on macOS 12 (both on Intel and Apple Silicon). See the note below for details.
 
 At this stage, gen_ext is still an experimental project. My knowledge of gen~ is fairly naive and limited, so there may be some things that don't work. 
 
@@ -56,9 +56,27 @@ _Note: If you don't want the `pdsr`, `pdbs` or `pdset` messages to override othe
 
 See the `main.pd` file in the spectral delay example for an idea of how it can work. 
 	
+#### Compiling on macOS
+
+It's convenient to be able to build and test your externals on a Mac before copying over to the Organelle, so here is one way you can do that.
+
+I already have a lot of dev tools installed on my Mac here, so I can't confirm that the method below is totally sufficient (or even necessary) for compiling on a Mac. The following steps are based on my best guess of what would be required to get a 'totally new' Mac ready to compile your externals:
+
+1. Install `Xcode` from the Mac App Store. It is a free download (but it is several GB in size). The purpose is to make sure the necessary command-line compilation tools are installed on your Mac.
+2. Run the `Xcode` app at least once so that it can complete the installation of its developer environment during its "first run" process. You can close it when it is done. The rest is done in Terminal.
+3. Proceed as above to export your `gen~` code and copy it into the `gen_ext` wrapper.
+4. To compile your code, open your terminal to the project folder and run `make all`. 
+5. If you are like me, you will get a compilation error in the file `gen/gen_dsp/genlib_ops.h`. It complains that it can't find the function `exp2f` in the following line: 
+	`static const t_sample EXP2_NEG23 = exp2f(-23.f);`
+	The solution that works for me is to simply edit this line and change the function name to `exp2`.
+	
+Note that this compilation process generates intermediate files that are incompatible with the Organelle. So if you copy your project to the Organelle, remember to run `make clean` to delete those files before running `make all`.
+
 #### Attribution
 
 The _gigaverb_ example included in this repository includes code exported from the _gen~.gigaverb_ example code included in Max 8.3.2. Cycling '74 attributes this implementation as being ported from an implementation by Juhana Sadeharju (kouhia@nic.funet.fi).
 
 The _spectraldelayfb_ example included in this repository includes code exported from the _gen~.spectraldelay_feedback_ example code included in Max 8.5.0.
+
+
 
