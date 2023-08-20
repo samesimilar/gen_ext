@@ -16,6 +16,7 @@ This has been tested with gen~ code exported from Max 8.3.2.
 ### How to use gen_ext
 
 1. In Max 8, send an `exportcode` message to your `gen~` object, to generate your c++ dsp code-base.
+	- If your gen~ patcher uses `buffer` objects, a message will be printed in the Max console warning that buffers are not supported by `exportcode`. Your code will still be exported and you can ignore this warning. See the section below for details on how to enable buffer objects in your exported code.
 2. Create a new project folder and then copy the contents of this repository's `template` into it.
 3. Copy the exported `gen~` dsp code, (including the `gen_dsp` folder) into the `gen` folder in the template. Make a note of the .cpp file that `gen~` exported.
 4. Open `Makefile` in your project folder and edit the two variables at the top.
