@@ -9,7 +9,7 @@ At this stage, gen_ext is still an experimental project. My knowledge of gen~ is
 
 ### Things that don't work
 
-* Buffers are supported but only for 1 channel (each). Multi-channel buffers are not supported.
+* Buffers are supported but only for 1 channel (each). Multi-channel buffers are not supported. Workaround: Use one buffer/array per channel.
 
 This has been tested with gen~ code exported from Max 8.3.2.
 
